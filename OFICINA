@@ -1,0 +1,255 @@
+-- Criando o banco de dados
+CREATE DATABASE oficina_mecanica;
+USE oficina_mecanica;
+
+-- Tabela Clientes
+CREATE TABLE Clientes (
+    idClientes INT auto_increment PRIMARY KEY,
+    Nome VARCHAR(45),
+    cpf VARCHAR(45),
+    constraint unique_cpf unique (cpf)
+);
+
+-- Tabela Veiculo
+CREATE TABLE Veiculo (
+    idVeiculo INT auto_increment PRIMARY KEY,
+    Modelo VARCHAR(45),
+    Placa VARCHAR(45),
+    Clientes_idClientes INT, -- Chave estrangeira
+    FOREIGN KEY (Clientes_idClientes) REFERENCES Clientes(idClientes),
+    constraint unique_placa unique (placa)
+);
+
+-- Tabela Serviço
+CREATE TABLE Servico (
+    idServico INT auto_increment PRIMARY KEY,
+    Valor INT,
+    Nome_do_Serviço VARCHAR(45),
+    Equipe_para_OS_idEquipe_para_OS INT, -- Chave estrangeira
+    autorizacao boolean not null,
+    FOREIGN KEY (Equipe_para_OS_idEquipe_para_OS) REFERENCES Equipe_para_OS(idEquipe_para_OS)
+);
+
+CREATE TABLE ServicoOS (
+    idServicoServico INT,
+    idServicoOS INT, -- Chave estrangeira
+    FOREIGN KEY (idServicoOS) REFERENCES OS(idOS),
+    FOREIGN KEY (idServicoServico) REFERENCES Equipe_para_OS(idEquipe_para_OS)
+);
+
+-- Tabela Peça
+CREATE TABLE Peca (
+    idPeca INT auto_increment PRIMARY KEY,
+    Valor INT,
+    Marca VARCHAR(45),
+    Nome_da_Peca VARCHAR(45)
+);
+
+-- Tabela relação_peça/OS
+CREATE TABLE relacao_peça_OS (
+    OS_idOS INT, -- Chave estrangeira
+    Peca_idPeca INT, -- Chave estrangeira
+    Quantidade INT,
+    PRIMARY KEY (OS_idOS, Peca_idPeca),
+    FOREIGN KEY (OS_idOS) REFERENCES OS(idOS),
+    FOREIGN KEY (Peca_idPeca) REFERENCES Peca(idPeca)
+);
+
+-- Tabela Mão de obra
+CREATE TABLE Mao_de_obra (
+    idMao_de_obra INT auto_increment PRIMARY KEY,
+    Valor_Tabelado INT,
+    Nome_da_função VARCHAR(45)
+);
+
+-- Tabela Mão de obra/OS
+CREATE TABLE Mao_de_obra_OS (
+    Mao_de_obra_idMao_de_obra INT, -- Chave estrangeira
+    OS_idOS INT, -- Chave estrangeira
+    PRIMARY KEY (Mao_de_obra_idMao_de_obra, OS_idOS),
+    FOREIGN KEY (Mao_de_obra_idMao_de_obra) REFERENCES Mao_de_obra(idMao_de_obra),
+    FOREIGN KEY (OS_idOS) REFERENCES OS(idOS)
+);
+
+-- Tabela OS
+CREATE TABLE OS (
+    idOS INT auto_increment PRIMARY KEY,
+    código VARCHAR(45),
+    data_da_emissão DATE,
+    Valor INT,
+    Status VARCHAR(45),
+    data_de_Conclusão DATE,
+    Equipe_para_OS_idEquipe_para_OS INT, -- Chave estrangeira
+    FOREIGN KEY (Equipe_para_OS_idEquipe_para_OS) REFERENCES Equipe_para_OS(idEquipe_para_OS)
+);
+
+-- Tabela Equipe para OS
+CREATE TABLE Equipe_para_OS (
+    idEquipe_para_OS INT auto_increment PRIMARY KEY,
+    Nome_da_Equipe VARCHAR(45),
+    Função VARCHAR(45),
+    revisao_idrevisao INT, -- Chave estrangeira
+    Conserto_idConserto INT, -- Chave estrangeira
+    FOREIGN KEY (revisao_idrevisao) REFERENCES revisao(idrevisao),
+    FOREIGN KEY (Conserto_idConserto) REFERENCES Conserto(idConserto)
+);
+
+-- Tabela revisao
+CREATE TABLE revisao (
+    idrevisao INT auto_increment PRIMARY KEY,
+    Veiculo_idVeiculo INT, -- Chave estrangeira
+    FOREIGN KEY (Veiculo_idVeiculo) REFERENCES Veiculo(idVeiculo)
+);
+
+-- Tabela Conserto
+CREATE TABLE Conserto (
+    idConserto INT auto_increment PRIMARY KEY,
+    Veiculo_idVeiculo INT, -- Chave estrangeira
+    Problema VARCHAR(45),
+    FOREIGN KEY (Veiculo_idVeiculo) REFERENCES Veiculo(idVeiculo)
+);
+
+-- Tabela Mecânicos
+CREATE TABLE Mecanicos (
+    idMecanicos INT auto_increment PRIMARY KEY,
+    Nome VARCHAR(45),
+    Endereço VARCHAR(45),
+    Especialidade VARCHAR(45),
+    codigo VARCHAR(45),
+    Equipe_para_OS_idEquipe_para_OS INT, -- Chave estrangeira
+    FOREIGN KEY (Equipe_para_OS_idEquipe_para_OS) REFERENCES Equipe_para_OS(idEquipe_para_OS),
+    constraint unique_code unique (codigo)
+);
+
+INSERT INTO ServicoOS (idServicoServico, idServicoOS) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5);
+
+INSERT INTO Clientes (Nome, cpf) VALUES
+('João Silva', '12345678901'),
+('Maria Oliveira', '98765432100'),
+('Carlos Santos', '11122233344'),
+('Ana Costa', '55566677788'),
+('Pedro Almeida', '99988877766');
+
+-- Inserir Veículos
+INSERT INTO Veiculo (Modelo, Placa, Clientes_idClientes) VALUES
+('Gol', 'ABC1234', 1),
+('Civic', 'DEF5678', 2),
+('Onix', 'GHI9101', 3),
+('HB20', 'JKL1213', 4),
+('Corolla', 'MNO1415', 5);
+
+-- Inserir Revisão
+INSERT INTO revisao (Veiculo_idVeiculo) VALUES
+(1), (2), (3), (4), (5);
+
+-- Inserir Conserto
+INSERT INTO Conserto (Veiculo_idVeiculo, Problema) VALUES
+(1, 'Troca de óleo'),
+(2, 'Suspensão quebrada'),
+(3, 'Freios desgastados'),
+(4, 'Bateria descarregada'),
+(5, 'Ar-condicionado com defeito');
+
+-- Inserir Equipe para OS
+INSERT INTO Equipe_para_OS (Nome_da_Equipe, Função, revisao_idrevisao, Conserto_idConserto) VALUES
+('Equipe A', 'Revisão Geral', 1, 1),
+('Equipe B', 'Suspensão', 2, 2),
+('Equipe C', 'Freios', 3, 3),
+('Equipe D', 'Elétrica', 4, 4),
+('Equipe E', 'Climatização', 5, 5);
+
+-- Inserir OS
+INSERT INTO OS (código, data_da_emissão, Valor, Status, data_de_Conclusão, Equipe_para_OS_idEquipe_para_OS) VALUES
+('OS001', '2024-01-10', 500, 'Concluído', '2024-01-12', 1),
+('OS002', '2024-01-15', 1200, 'Em andamento', NULL, 2),
+('OS003', '2024-01-20', 800, 'Concluído', '2024-01-22', 3),
+('OS004', '2024-01-25', 300, 'Concluído', '2024-01-26', 4),
+('OS005', '2024-02-01', 1000, 'Aguardando peças', NULL, 5);
+
+-- Inserir Serviços
+INSERT INTO Servico (Valor, Nome_do_Serviço, Equipe_para_OS_idEquipe_para_OS, autorizacao) VALUES
+(200, 'Troca de óleo', 1, true),
+(700, 'Reparo de suspensão', 2, true),
+(400, 'Troca de pastilhas de freio', 3, true),
+(150, 'Troca de bateria', 4, true),
+(600, 'Manutenção do ar-condicionado', 5, false);
+
+-- Inserir Peças
+INSERT INTO Peca (Valor, Marca, Nome_da_Peca) VALUES
+(50, 'Bosch', 'Filtro de óleo'),
+(300, 'Monroe', 'Amortecedor'),
+(100, 'Fremax', 'Disco de freio'),
+(200, 'Heliar', 'Bateria 60Ah'),
+(350, 'Denso', 'Compressor de ar');
+
+-- Inserir relação peça/OS
+INSERT INTO relacao_peça_OS (OS_idOS, Peca_idPeca, Quantidade) VALUES
+(1, 1, 1),
+(2, 2, 2),
+(3, 3, 4),
+(4, 4, 1),
+(5, 5, 1);
+
+-- Inserir Mão de obra
+INSERT INTO Mao_de_obra (Valor_Tabelado, Nome_da_função) VALUES
+(150, 'Troca de óleo'),
+(500, 'Suspensão'),
+(300, 'Freios'),
+(200, 'Elétrica'),
+(400, 'Climatização');
+
+-- Inserir Mão de obra/OS
+INSERT INTO Mao_de_obra_OS (Mao_de_obra_idMao_de_obra, OS_idOS) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5);
+
+-- Inserir Mecânicos
+INSERT INTO Mecanicos (Nome, Endereço, Especialidade, codigo, Equipe_para_OS_idEquipe_para_OS) VALUES
+('José Pereira', 'Rua A, 100', 'Troca de óleo', 'MECA001', 1),
+('Lucas Martins', 'Rua B, 200', 'Suspensão', 'MECA002', 2),
+('Ricardo Souza', 'Rua C, 300', 'Freios', 'MECA003', 3),
+('André Silva', 'Rua D, 400', 'Elétrica', 'MECA004', 4),
+('Felipe Costa', 'Rua E, 500', 'Climatização', 'MECA005', 5);
+
+SELECT * FROM Clientes;
+SELECT * FROM Veiculo;
+SELECT * FROM revisao;
+SELECT * FROM Conserto;
+SELECT * FROM Equipe_para_OS;
+SELECT * FROM OS;
+SELECT * FROM Servico;
+SELECT * FROM ServicoOS;
+SELECT * FROM Peca;
+SELECT * FROM relacao_peça_OS;
+SELECT * FROM Mao_de_obra;
+SELECT * FROM Mao_de_obra_OS;
+SELECT * FROM Mecanicos;
+
+-- valor mão de obra tabelado e serviço
+
+Select status, sum(valor) valor, sum(Valor_Tabelado) Valor_Tabelado from OS JOIN Mao_de_obra_os on OS_idOS = idOS join Mao_de_obra on Mao_de_obra_idMao_de_obra = idMao_de_obra
+group by STATUS;
+
+-- servicos aprovados pelo client
+
+select * from servico where autorizacao = true;
+
+-- peças mais vendidas
+
+select quantidade, marca from relacao_peça_os join peca on idpeca = Peca_idPeca
+order by quantidade desc;
+
+-- pegas com maior valor de venda
+
+select marca, sum(quantidade) quantidade, sum(valor) valor, sum(valor*quantidade) valor_total from relacao_peça_os join peca on idpeca = Peca_idPeca
+group by marca
+order by valor_total desc;
+
